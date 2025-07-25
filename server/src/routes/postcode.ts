@@ -7,11 +7,13 @@ const router = express.Router();
 
 router.get('/:postcode', async (req, res) => {
   try {
+
     let postcode = formatPostcode(req.params.postcode);
     if(!postcode){
       res.status(404).send('Not a valid postcode');
       return;
     }
+
 
     const constituencyName = await findConstituencyNameByPostcode(postcode);
 

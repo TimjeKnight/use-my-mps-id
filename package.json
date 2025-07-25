@@ -3,6 +3,7 @@
   "dependencies": {
     "axios": "^1.11.0",
     "csv-parser": "^3.2.0",
+    "csv-stringify": "^6.6.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "node-fetch": "^3.3.2",
@@ -21,7 +22,7 @@
   "scripts": {
     "build:server": "tsc -p server/tsconfig.json",
     "build:client": "cd client && npm run build",
-    "copy:csv": "cpx 'server/postcode_constituency_files/*.csv' 'dist/postcode_constituency_files/'",
+    "copy:csv": "cpx \"server/postcode_constituency_files/*.csv\" \"dist/postcode_constituency_files/\"",
     "copy:prebakedimages": "cpx output/*.png dist/output/",
     "copy:client": "rm -rf dist/client && cp -r client/dist dist/client",
     "full-build": "npm run build:server && npm run build:client && npm run copy:client && npm run copy:csv && npm run copy:prebakedimages",
