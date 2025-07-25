@@ -22,7 +22,9 @@ router.get('/:postcode', async (req, res) => {
         }
         //var result = await generateMockPassportPhoto(representative);
         var result = await generateMockDriversLicense(representative);
-        res.json(result);
+        //res.json(result);
+        representative.mockDriversLicenceLocation = result;
+        res.json(representative);
     }
     catch (err) {
         console.log(err);

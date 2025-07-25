@@ -11,3 +11,7 @@
 .env
 # production
 /build
+
+/dist/*
+/client/dist/*
+/server/dist/*

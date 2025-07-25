@@ -12,8 +12,8 @@ async function loadPostcodes() {
     if (isLoaded)
         return;
     const files = [
-        path.join(__dirname, '../../postcode_constituency_files/pcd_pcon_uk_lu_may_24-1.csv'),
-        path.join(__dirname, '../../postcode_constituency_files/pcd_pcon_uk_lu_may_24-2.csv')
+        path.join(__dirname, '../postcode_constituency_files/pcd_pcon_uk_lu_may_24-1.csv'),
+        path.join(__dirname, '../postcode_constituency_files/pcd_pcon_uk_lu_may_24-2.csv')
     ];
     console.log('📂 Loading postcode data from:');
     files.forEach(f => console.log(' -', f));

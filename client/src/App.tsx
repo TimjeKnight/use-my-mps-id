@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [postcode, setPostcode] = useState('');
+  const [mpInfo, setMpInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMpInfo(null);
+
+    try {
+      const response = await fetch(`/postcode/${encodeURIComponent(postcode.trim())}`);
+      if (!response.ok) throw new Error('MP not found for that postcode.');
+
+      const data = await response.json();
+      setMpInfo(data);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h3>Shall we see what your local MP's driving licence might look like?</h3>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="postcode">Please enter your UK postcode:</label><br />
+        <input
+          id="postcode"
+          type="text"
+          value={postcode}
+          onChange={(e) => setPostcode(e.target.value.replace(" ", ""))}
+          placeholder="e.g. SW1A 1AA"
+          style={{ marginTop: '0.5rem', padding: '0.5rem', width: '250px' }}
+        />
+        <br /><br />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Finding...' : 'Submit'}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      </form>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {mpInfo && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2>Your MP</h2>
+          <p><strong>Name:</strong> {mpInfo.name}</p>
+          <p><strong>Party:</strong> {mpInfo.partyName}</p>
+          <p><strong>Constituency:</strong> {mpInfo.constituencyName}</p>
+          {mpInfo.thumbnailUrl && (
+            <img src={mpInfo.thumbnailUrl} alt={`${mpInfo.name}`} width="150" />
+          )}
+          <img src={'/images/ai/'+mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} width="600" />
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

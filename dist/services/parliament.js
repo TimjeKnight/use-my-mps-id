@@ -24,7 +24,7 @@ export async function getMpByConstituency(constituencyName) {
     const profileResponse = await fetch(profileUrl);
     const profileData = <any>await profileResponse.json();
     console.log(profileData);
-    const dob = profileData?.value?.dateOfBirth ?? '07/10/1972';
+    const dob = profileData?.value?.dateOfBirth ?? '07.10.1972';
     */
         const representative = {
             id: member?.id ?? 0,
@@ -32,11 +32,12 @@ export async function getMpByConstituency(constituencyName) {
             thumbnailUrl: member?.thumbnailUrl ?? '',
             partyName: member?.latestParty?.name ?? '',
             constituencyName: constituencyName,
-            dob: '07/10/1972',
+            dob: '07.10.1972',
             address1: address?.addressLine1 ?? '29 Bridge Street',
             address2: address?.addressLine2 ?? 'Bridge St',
             address3: address?.addressLine3 ?? '',
             address4: address?.postcode ?? 'SW1A 2JR',
+            mockDriversLicenceLocation: ''
         };
         //console.log(representative);
         return representative;

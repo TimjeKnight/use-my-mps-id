@@ -74,7 +74,7 @@ export async function generateImageFromPrompt(
     console.log("68"+filePath);
     await fs.writeFile(filePath, Buffer.from(imageOutput.result, 'base64'));
     console.log(`✅ Image saved as ${filePath}`);
-    return filePath;
+    return fileName;
   }
 
   console.log('ℹ️ No image generated');
@@ -94,24 +94,26 @@ export async function generateMockDriversLicense(rep: Representative): Promise<s
 */
     const idCardLocation = await idCardExists(rep);
     if(idCardLocation){
-        console.log("id card found, returning "+idCardLocation);
+        console.log("id card found, returning");
         return idCardLocation;
     } else{
-        console.log("id not found, generating...");
+        console.log(`id not found, generating...`);
+       // return "";
     }
 
 
 
   //const imagePath = await downloadThumbnail(rep.thumbnailUrl, rep.id);
-  const fileName = `${rep.name.replace(/\s+/g, '_')}-passport.png`;
-  const filePath = path.join(__dirname, `../../output/ai/${fileName}`);
-  const base64Image = await encodeImageAsBase64(filePath);
+  //const fileName = `${rep.name.replace(/\s+/g, '_')}-passport.png`;
+  //const filePath = path.join(__dirname, `../output/ai/${fileName}`);
+  //const base64Image = await encodeImageAsBase64(filePath);
 
   const address = [rep.address1, rep.address2, rep.address3, rep.address4]
     .filter(Boolean)
     .join(', ');
 
     const surname = rep.name.trim().split(' ').slice(-1)[0].toUpperCase();
+    const shortSurname = surname.slice(0, 5).toUpperCase();
   const prompt = `
 Fingers hold up a UK driving licence. Background is indoors but heavily blurred.
 Generate a black and white passport-style photo to be placed on the left of the card.
@@ -123,8 +125,8 @@ Use the official UK layout and the following details:
 3. ${rep.dob} ENGLAND
 4a. 20.06.2019  4c. DVLA
 4b. 19.06.2029
-5. BADEN801276KB9UT 54
-7. (example signature)
+5. ${shortSurname}801276KB9UT 54
+7. (squiggly signature)
 8. ${address}
 9. AM/B/BE/f/k/q
 `;
@@ -186,9 +188,10 @@ export async function passportPhotoExists(rep: Representative): Promise<boolean>
 export async function idCardExists(rep: Representative): Promise<string> {
   const fileName = `${rep.name.replace(/\s+/g, '_')}.png`;
   const filePath = path.join(__dirname, `../../output/ai/${fileName}`);
+  console.log(filePath);
   try {
     await fs.access(filePath);
-    return filePath;
+    return fileName;
   } catch (err) {
     return "";
   }

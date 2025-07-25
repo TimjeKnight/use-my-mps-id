@@ -13,13 +13,18 @@
     "@types/express": "^5.0.3",
     "@types/node": "^24.1.0",
     "@types/node-fetch": "^2.6.12",
+    "cpx": "^1.5.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
+    "build:server": "tsc -p server/tsconfig.json",
+    "build:client": "cd client && npm run build",
+    "copy:csv": "cpx server/postcode_constituency_files/*.csv dist/postcode_constituency_files/",
+    "copy:prebakedimages": "cpx output/*.png dist/output/",
+    "copy:client": "rm -rf dist/client && cp -r client/dist dist/client",
+    "full-build": "npm run build:server && npm run build:client && npm run copy:client && npm run copy:csv && npm run copy:prebakedimages",
     "dev": "nodemon"
   }
 }

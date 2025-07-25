@@ -1,5 +1,5 @@
 {
-  "watch": ["src"],
-  "ext": "ts",
-  "exec": "npm run build && node dist/main.js"
+  "watch": ["server/src", "client/src"],
+  "ext": "ts,tsx",
+  "exec": "npm run full-build && node dist/main.js"
 }
