@@ -39,19 +39,20 @@ export async function getMpByConstituency(constituencyName: string): Promise<Rep
 
     if (!member) return null;
 
+    /* todo - lookup DoB on wikipedia
     const profileUrl = `https://members-api.parliament.uk/api/Members/${member.id}`;
 const profileResponse = await fetch(profileUrl);
 const profileData = <any>await profileResponse.json();
 console.log(profileData);
 const dob = profileData?.value?.dateOfBirth ?? '07/10/1972';
-
+*/
     const representative: Representative = {
       id: member?.id ?? 0,
       name: member?.nameDisplayAs ?? '',
       thumbnailUrl: member?.thumbnailUrl ?? '',
       partyName: member?.latestParty?.name ?? '',
       constituencyName: constituencyName,
-      dob: dob,
+      dob: '07/10/1972',
 
       address1: address?.addressLine1 ?? '29 Bridge Street',
       address2: address?.addressLine2 ?? 'Bridge St',

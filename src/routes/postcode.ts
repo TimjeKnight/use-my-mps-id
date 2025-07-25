@@ -1,6 +1,7 @@
 import express from 'express';
 import { findConstituencyNameByPostcode } from '../services/csvService.js';
 import { getMpByConstituency } from '../services/parliament.js';
+import { generateMockDriversLicense, generateMockPassportPhoto } from '../services/ai.js';
 
 const router = express.Router();
 
@@ -19,11 +20,19 @@ router.get('/:postcode', async (req, res) => {
       return;      
     }
 
-    const mpId = await getMpByConstituency(constituencyName);
-    res.json(mpId);
+    const representative = await getMpByConstituency(constituencyName);
+    
+    if (!representative) {
+      res.status(404).send('Representative not found');
+      return;      
+    }
+    //var result = await generateMockPassportPhoto(representative);
+    var result = await generateMockDriversLicense(representative);
+    res.json(result);
 
   } catch (err) {
-    res.status(500).send('Error reading CSV file');
+    console.log(err);
+    res.status(500).send('Error somewhere generating the ID');
   }
 });
 
@@ -34,14 +43,7 @@ function formatPostcode(input: string): string | null {
     return null;
   }
 
-  // Split into outward and inward codes (rightmost 3 are always inward)
-  const inward = raw.slice(-3);
-  const outward = raw.slice(0, raw.length - 3);
-
-  // Now insert spaces between outward and inward
-  const padded = outward.padEnd(4, ' ') + inward;
-
-  return padded;
+  return raw;
 }
 
 export default router;
