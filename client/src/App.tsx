@@ -56,7 +56,7 @@ function App() {
           {mpInfo.thumbnailUrl && (
             <img src={mpInfo.thumbnailUrl} alt={`${mpInfo.name}`} width="150" />
           )}
-          <img src={'/images/ai/'+mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} width="600" />
+          <img src={mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} width="600" />
         </div>
       )}
     </div>
