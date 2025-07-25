@@ -1,5 +1,5 @@
 import express from 'express';
-import { findConstituencyNameByPostcode } from '../services/csvService.js';
+import { findConstituencyNameByPostcode, buildPostcodeDictionaryFromFiles } from '../services/csvService.js';
 import { getMpByConstituency } from '../services/parliament.js';
 import { generateMockDriversLicense, generateMockPassportPhoto } from '../services/ai.js';
 
@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/:postcode', async (req, res) => {
   try {
 
+    //await buildPostcodeDictionaryFromFiles();
     let postcode = formatPostcode(req.params.postcode);
     if(!postcode){
       res.status(404).send('Not a valid postcode');

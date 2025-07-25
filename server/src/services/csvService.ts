@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import csvParser from 'csv-parser';
-import { stringify } from 'csv-stringify/sync';
+import { encode, decode } from '@msgpack/msgpack';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +15,7 @@ const RAW_CSV_FILES = [
   path.join(__dirname, '../postcode_constituency_files/pcd_pcon_uk_lu_may_24-2.csv')
 ];
 
-const DICTIONARY_FILE = path.join(__dirname, '../postcode_constituency_files/postcodeDictionary.csv');
+const DICTIONARY_FILE = path.join(__dirname, '../postcode_constituency_files/postcodeDictionary.msgpack');
 
 export interface Constituency {
   pcd: string;
@@ -24,7 +24,7 @@ export interface Constituency {
 
 /**
  * STEP 1:
- * Build postcodeDictionary.csv from two large raw CSV files.
+ * Build a compact binary postcode dictionary using MessagePack.
  */
 export async function buildPostcodeDictionaryFromFiles(): Promise<void> {
   const map = new Map<string, string>();
@@ -47,38 +47,36 @@ export async function buildPostcodeDictionaryFromFiles(): Promise<void> {
   console.log('🔄 Building postcode dictionary from source files...');
   await Promise.all(RAW_CSV_FILES.map(loadFile));
 
-  const data = Array.from(map.entries()).map(([pcd, pconnm]) => ({ pcd, pconnm }));
-  const csvOutput = stringify(data, { header: true, columns: ['pcd', 'pconnm'] });
-  fs.writeFileSync(DICTIONARY_FILE, csvOutput, 'utf-8');
+  const obj = Object.fromEntries(map.entries());
+  const buf = encode(obj);
+  fs.writeFileSync(DICTIONARY_FILE, buf);
 
-  console.log(`✅ postcodeDictionary.csv written with ${data.length} entries.`);
+  console.log(`✅ postcodeDictionary.msgpack written with ${map.size} entries.`);
 }
 
 /**
  * STEP 2:
- * Load postcodeDictionary.csv into memory.
+ * Load the postcode dictionary from MessagePack binary file into memory.
  */
 export async function loadPostcodes(): Promise<void> {
   if (isLoaded) return;
 
-  console.log('📥 Loading postcodeDictionary.csv...');
+  console.log('📥 Loading postcodeDictionary.msgpack...');
 
-  await new Promise<void>((resolve, reject) => {
-    fs.createReadStream(DICTIONARY_FILE)
-      .pipe(csvParser())
-      .on('data', (row: Constituency) => {
-        const key = row.pcd?.replace(/\s/g, '').trim().toUpperCase();
-        if (key && row.pconnm) {
-          postcodeMap.set(key, row.pconnm);
-        }
-      })
-      .on('end', () => {
-        console.log(`✅ Loaded ${postcodeMap.size} postcodes into memory.`);
-        isLoaded = true;
-        resolve();
-      })
-      .on('error', reject);
-  });
+  try {
+    const buf = fs.readFileSync(DICTIONARY_FILE);
+    const dictionary = decode(buf) as Record<string, string>;
+
+    for (const [pcd, pconnm] of Object.entries(dictionary)) {
+      postcodeMap.set(pcd, pconnm);
+    }
+
+    console.log(`✅ Loaded ${postcodeMap.size} postcodes into memory.`);
+    isLoaded = true;
+  } catch (err) {
+    console.error('❌ Failed to load postcode dictionary:', err);
+    throw err;
+  }
 }
 
 /**
