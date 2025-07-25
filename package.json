@@ -18,6 +18,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
+  "postinstall": "cd client && npm install",
   "scripts": {
     "build:server": "tsc -p server/tsconfig.json",
     "build:client": "cd client && npm run build",
