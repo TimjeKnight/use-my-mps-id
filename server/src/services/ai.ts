@@ -6,6 +6,7 @@ import { Representative } from './parliament.js';
 import { OpenAI } from 'openai';
 import { fileURLToPath } from 'url';
 import 'dotenv/config'; // auto-loads .env
+import { checkR2ObjectExists, uploadToR2 } from './r2cdn.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,12 +70,12 @@ export async function generateImageFromPrompt(
   const imageOutput = response.output?.find(o => o.type === 'image_generation_call');
 
   if (imageOutput?.result && typeof imageOutput.result === 'string') {
-    const fileName = `${outputFileName.replace(/\s+/g, '_')}.png`;
-    const filePath = path.join(__dirname, `../../output/ai/${fileName}`);
-    console.log("68"+filePath);
-    await fs.writeFile(filePath, Buffer.from(imageOutput.result, 'base64'));
-    console.log(`✅ Image saved as ${filePath}`);
-    return fileName;
+  const fileName = `${outputFileName.replace(/\s+/g, '_')}.png`;
+  const buffer = Buffer.from(imageOutput.result, 'base64');
+
+  const url = await uploadToR2(buffer, fileName, 'image/png');
+  console.log(`✅ Image uploaded to R2: ${url}`);
+  return url;
   }
 
   console.log('ℹ️ No image generated');
@@ -187,12 +188,12 @@ export async function passportPhotoExists(rep: Representative): Promise<boolean>
 
 export async function idCardExists(rep: Representative): Promise<string> {
   const fileName = `${rep.name.replace(/\s+/g, '_')}.png`;
-  const filePath = path.join(__dirname, `../../output/ai/${fileName}`);
-  console.log(filePath);
-  try {
-    await fs.access(filePath);
-    return fileName;
-  } catch (err) {
-    return "";
+  const exists = await checkR2ObjectExists(fileName);
+
+  if (exists) {
+    const url = `https://r2-public-proxy.use-their-id.workers.dev/${fileName}`;
+    return url;
   }
+
+  return '';
 }
