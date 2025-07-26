@@ -54,9 +54,9 @@ function App() {
           <p><strong>Party:</strong> {mpInfo.partyName}</p>
           <p><strong>Constituency:</strong> {mpInfo.constituencyName}</p>
           {mpInfo.thumbnailUrl && (
-            <img src={mpInfo.thumbnailUrl} alt={`${mpInfo.name}`} width="150" />
+            <img src={mpInfo.thumbnailUrl} alt={`${mpInfo.name}`} className="thumbnail" />
           )}
-          <img src={mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} width="600" />
+          <img src={mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} className="drivingLicence" />
         </div>
       )}
 
