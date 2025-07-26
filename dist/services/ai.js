@@ -8,6 +8,7 @@ import 'dotenv/config'; // auto-loads .env
 import { checkR2ObjectExists, uploadToR2 } from './r2cdn.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const inFlightGenerations = new Map();
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
@@ -61,33 +62,27 @@ export async function generateImageFromPrompt(prompt, base64Images, outputFileNa
     return '';
 }
 export async function generateMockDriversLicense(rep) {
-    /*
-    if(!(await passportPhotoExists(rep))){
-        console.log("passport not found, generating");
-        await generateMockPassportPhoto(rep);
-    }else {
-        console.log("passport found");
+    const cacheKey = rep.name.replace(/\s+/g, '_');
+    // Check if generation already in progress
+    if (inFlightGenerations.has(cacheKey)) {
+        console.log(`⏳ Awaiting in-progress generation for ${cacheKey}`);
+        return inFlightGenerations.get(cacheKey);
     }
-*/
+    // Check if it already exists in the CDN
     const idCardLocation = await idCardExists(rep);
     if (idCardLocation) {
-        console.log("id card found, returning");
+        console.log(`✅ Existing card found for ${cacheKey}`);
         return idCardLocation;
     }
-    else {
-        console.log(`id not found, generating...`);
-        // return "";
-    }
-    //const imagePath = await downloadThumbnail(rep.thumbnailUrl, rep.id);
-    //const fileName = `${rep.name.replace(/\s+/g, '_')}-passport.png`;
-    //const filePath = path.join(__dirname, `../output/ai/${fileName}`);
-    //const base64Image = await encodeImageAsBase64(filePath);
-    const address = [rep.address1, rep.address2, rep.address3, rep.address4]
-        .filter(Boolean)
-        .join(', ');
-    const surname = rep.name.trim().split(' ').slice(-1)[0].toUpperCase();
-    const shortSurname = surname.slice(0, 5).toUpperCase();
-    const prompt = `
+    // Begin generation and cache the promise
+    const generationPromise = (async () => {
+        console.log(`🚀 Generating new ID for ${cacheKey}`);
+        const address = [rep.address1, rep.address2, rep.address3, rep.address4]
+            .filter(Boolean)
+            .join(', ');
+        const surname = rep.name.trim().split(' ').slice(-1)[0].toUpperCase();
+        const shortSurname = surname.slice(0, 5).toUpperCase();
+        const prompt = `
 Fingers hold up a UK driving licence. Background is indoors but heavily blurred.
 Generate a black and white passport-style photo to be placed on the left of the card.
 Top left: UK. Top centre: DRIVING LICENCE. Top right: Union Jack flag.
@@ -102,9 +97,17 @@ Use the official UK layout and the following details:
 7. (squiggly signature)
 8. ${address}
 9. AM/B/BE/f/k/q
-`;
-    return await generateImageFromPrompt(prompt, [], rep.name);
-    //return await generateImageFromPrompt(prompt, [base64Image], rep.name);
+    `;
+        return await generateImageFromPrompt(prompt, [], rep.name);
+    })();
+    inFlightGenerations.set(cacheKey, generationPromise);
+    try {
+        const result = await generationPromise;
+        return result;
+    }
+    finally {
+        inFlightGenerations.delete(cacheKey); // Clean up after
+    }
 }
 export async function generateMockDriversLicenseBack(rep) {
     /*
