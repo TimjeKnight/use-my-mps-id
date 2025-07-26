@@ -14,7 +14,7 @@ function App() {
     setMpInfo(null);
 
     try {
-      const response = await fetch(`/postcode/${encodeURIComponent(postcode.trim())}`);
+      const response = await fetch(`/postcode/${encodeURIComponent(postcode.replace(" ", ""))}`);
       if (!response.ok) throw new Error('MP not found for that postcode.');
 
       const data = await response.json();
@@ -35,7 +35,7 @@ function App() {
           id="postcode"
           type="text"
           value={postcode}
-          onChange={(e) => setPostcode(e.target.value.replace(" ", ""))}
+          onChange={(e) => setPostcode(e.target.value)}
           placeholder="e.g. SW1A 1AA"
           style={{ marginTop: '0.5rem', padding: '0.5rem', width: '250px' }}
         />
@@ -59,6 +59,14 @@ function App() {
           <img src={mpInfo.mockDriversLicenceLocation} alt={`${mpInfo.name}`} width="600" />
         </div>
       )}
+
+      <a href="https://www.buymeacoffee.com/timje" target="_blank" className="buy-me-a-coffee" rel="noopener noreferrer">
+        <img
+          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+          alt="Buy Me A Coffee"
+          style={{ height: '60px', width: '217px' }}
+        />
+      </a>
     </div>
   );
 }
