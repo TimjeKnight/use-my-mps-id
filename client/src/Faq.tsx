@@ -9,7 +9,7 @@ function Faq() {
       Here's a third option! Use a mock of your local MP's ID. </p>
 
       <p><strong>Is this illegal?</strong><br />
-      I'm not a lawyer, but this is a parody site. It's using publicly available data about your MP. The ID number isn't valid and you can't use the card for anything real.
+      I'm not a lawyer, but this is a parody site. It's using publicly available data about your MP. The ID number isn't valid and you can't (and shouldn't) use the card for anything real.
       </p>
 
            <p><strong>Why have you done this?</strong><br />
@@ -22,7 +22,7 @@ function Faq() {
       If this is the first time someone has asked for this MP, we'll need to generate a new MP ID using AI, which takes about a minute. <a href="https://www.buymeacoffee.com/timje" target="_blank" rel="noopener noreferrer">It's also expensive.</a></p>
 
             <p><strong>Who are you?</strong><br />
-      I'm Timje, a software developer who is concerned about the Online Safety Act and its implications for privacy and security online.
+      I'm Tim, a software developer who is concerned about the Online Safety Act and its implications for privacy and security online.
       Harass me at feedback.timje@gmail.com</p>
 
 
@@ -31,7 +31,7 @@ function Faq() {
 
       <p><strong>How did you do this?</strong><br />      
         This site uses React for the frontend and Node.js for the backend. The MP data is fetched from the UK government public API, and the AI-generated images use the latest model from open AI. The images are stored on a Cloudflare R2 bucket.
-        The code is open source, so you can check it out on <a href="https://github.com/timje/use-my-mps-id">GitHub</a>. It was done in a hurry.</p>
+        The only actual detail given to the AI is the name - everything else is nonsense. It was done in a hurry.</p>
     </div>
   );
 }
