@@ -6,23 +6,38 @@ function App() {
   const [mpInfo, setMpInfo] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showAIDelayMsg, setShowAIDelayMsg] = useState(false);
+
+  const fetchMPInfo = async (postcode: string): Promise<any> => {
+    const response = await fetch(`/postcode/${encodeURIComponent(postcode.replace(" ", ""))}`);
+    if (!response.ok) throw new Error('MP not found for that postcode.');
+    return await response.json();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setMpInfo(null);
+    setShowAIDelayMsg(false);
+
+    const timeoutId = setTimeout(() => setShowAIDelayMsg(true), 4000);
 
     try {
-      const response = await fetch(`/postcode/${encodeURIComponent(postcode.replace(" ", ""))}`);
-      if (!response.ok) throw new Error('MP not found for that postcode.');
-
-      const data = await response.json();
+      let data;
+      try {
+        data = await fetchMPInfo(postcode);
+      } catch {
+        // Retry silently once if it fails
+        data = await fetchMPInfo(postcode);
+      }
       setMpInfo(data);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
+      setShowAIDelayMsg(false);
     }
   };
 
@@ -44,6 +59,12 @@ function App() {
           {loading ? 'Finding...' : 'Submit'}
         </button>
       </form>
+
+      {showAIDelayMsg && (
+        <p style={{ marginTop: '1rem', fontStyle: 'italic', color: '#444' }}>
+          Please hang on – I'm building a new ID for this MP using AI. This might take about a minute.
+        </p>
+      )}
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 

@@ -113,8 +113,12 @@ export async function generateMockDriversLicense(rep: Representative): Promise<s
     const shortSurname = surname.slice(0, 5).toUpperCase();
 
     const prompt = `
-Fingers hold up a UK driving licence. Background is indoors but heavily blurred.
-Generate a black and white passport-style photo to be placed on the left of the card.
+Fingers hold up a UK driving licence. 
+The left of the licence has a black and white passport-style photo, for a person named ${rep.name}.
+The fingers are positioned in a way that clearly displays the licence. 
+They are the same skin tone as ${rep.name}.
+The background is indoors but heavily blurred.
+
 Top left: UK. Top centre: DRIVING LICENCE. Top right: Union Jack flag.
 Use the official UK layout and the following details:
 
