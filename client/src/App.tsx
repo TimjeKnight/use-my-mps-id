@@ -23,7 +23,7 @@ function App() {
         onClick={() => navigate('/faq')}
         style={{
           position: 'fixed',
-          top: '3rem',
+          top: '4rem',
           left: '1rem',
           padding: '0.5rem 1rem',
           zIndex: 1000,

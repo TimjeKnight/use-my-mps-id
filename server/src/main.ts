@@ -23,7 +23,7 @@ try {
   console.error('❌ Error while mounting /postcode:', err);
 }
 
-app.use('/images', express.static(path.join(__dirname, '../output')));
+app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 // Serve React static files from root
 app.use(express.static(path.join(__dirname, './client')));

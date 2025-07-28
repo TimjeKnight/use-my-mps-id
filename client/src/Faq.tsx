@@ -29,8 +29,7 @@ function Faq() {
       <p><strong>Is my postcode stored?</strong><br />
       No - postcodes are only used to look up your MP's constituency. Use some other postcode if you prefer. Here's Starmer's - WC2B6NH</p>
 
-      <p><strong>How did you do this?</strong></p>
-      <p>
+      <p><strong>How did you do this?</strong><br />      
         This site uses React for the frontend and Node.js for the backend. The MP data is fetched from the UK government public API, and the AI-generated images use the latest model from open AI. The images are stored on a Cloudflare R2 bucket.
         The code is open source, so you can check it out on <a href="https://github.com/timje/use-my-mps-id">GitHub</a>. It was done in a hurry.</p>
     </div>
