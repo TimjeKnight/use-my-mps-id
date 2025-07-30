@@ -2,8 +2,6 @@ import express from 'express';
 import { findConstituencyNameByPostcode } from '../services/csvService.js';
 import { getMpByConstituency } from '../services/parliament.js';
 import { generateMockDriversLicense } from '../services/ai.js';
-import { combineWithSatireOverlay } from '../services/pngservice.js';
-import { getAllFilenames } from '../services/r2cdn.js';
 
 const router = express.Router();
 

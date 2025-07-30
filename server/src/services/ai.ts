@@ -7,6 +7,7 @@ import { OpenAI } from 'openai';
 import { fileURLToPath } from 'url';
 import 'dotenv/config'; // auto-loads .env
 import { checkR2ObjectExists, uploadToR2 } from './r2cdn.js';
+import { combineWithSatireOverlayFromBuffer } from './pngservice.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,7 +76,8 @@ export async function generateImageFromPrompt(
   const fileName = `${outputFileName.replace(/\s+/g, '_')}.png`;
   const buffer = Buffer.from(imageOutput.result, 'base64');
 
-  const url = await uploadToR2(buffer, fileName, 'image/png');
+  const url = await combineWithSatireOverlayFromBuffer(buffer, fileName);
+
   console.log(`✅ Image uploaded to R2: ${url}`);
   return url;
   }
