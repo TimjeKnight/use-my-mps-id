@@ -1,7 +1,9 @@
 import express from 'express';
-import { findConstituencyNameByPostcode, buildPostcodeDictionaryFromFiles } from '../services/csvService.js';
+import { findConstituencyNameByPostcode } from '../services/csvService.js';
 import { getMpByConstituency } from '../services/parliament.js';
-import { generateMockDriversLicense, generateMockPassportPhoto } from '../services/ai.js';
+import { generateMockDriversLicense } from '../services/ai.js';
+import { combineWithSatireOverlay } from '../services/pngservice.js';
+import { getAllFilenames } from '../services/r2cdn.js';
 
 const router = express.Router();
 
@@ -33,8 +35,8 @@ router.get('/:postcode', async (req, res) => {
     var result = await generateMockDriversLicense(representative);
     //res.json(result);
     representative.mockDriversLicenceLocation = result;
-    res.json(representative)
 
+    res.json(representative);
   } catch (err) {
     console.log(err);
     res.status(500).send('Error somewhere generating the ID');

@@ -6,16 +6,18 @@ function Faq() {
       <p><strong>What does this site do?</strong><br />
       This gives you an AI-generated mock driving licence for your MP based on public data. 
       This is useful given the recent Online Safety Act would otherwise require you to send your ID to a foreign identity checking service, or send your internet traffic a dodgy foreign VPN.
-      Here's a third option! Use a mock of your local MP's ID. </p>
+      This is disastrous for freedoms in the UK. It's also terrible for small sites.</p>
 
       <p><strong>Is this illegal?</strong><br />
-      I'm not a lawyer, but this is a parody site. It's using publicly available data about your MP. The ID number isn't valid and you can't (and shouldn't) use the card for anything real.
+      I've scribbled 'this is satire' on the ID, so it can't be used for anything real.
+      This is a parody site. It's using publicly available data about your MP. The ID number isn't valid and you can't (and shouldn't) use the card for anything real.
       </p>
 
            <p><strong>Why have you done this?</strong><br />
-     The online safety act is a terrible piece of legislation that makes the internet worse for everyone. 
-     Specifically, it's already being used to block people from accessing LGBTQ+ resources, sex education resources, substance addiction resources and anti-war information. 
-     When the inevitable happens and the data is all leaked, let's make sure that yours isn't in there.
+     The online safety act is a terrible piece of legislation that makes the internet worse for everyone. It is a weakening of privacy and security online, and it is already being used to censor content that the government doesn't like.
+     It's being used to block people from accessing LGBTQ+ resources, sex education resources, substance addiction resources and anti-war information. e.g. Al Jazeera News subreddit is now blocked unless you provide your ID. 
+     This legislation sounds like something that passes in Russia or China.
+     When the inevitable happens and the data is all leaked, I think it would be funny to see some MP's IDs in there.
       </p> 
 
             <p><strong>Why is it taking so long to show me an ID?</strong><br />

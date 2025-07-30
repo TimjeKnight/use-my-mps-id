@@ -2,7 +2,14 @@ import {
   S3Client,
   PutObjectCommand,
   HeadObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command
 } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
+
+const oldBucket = 'use-their-id'; // used in multiple places
+
+const newBucket = 'use-their-id-marked'; // used in multiple places
 
 export const r2 = new S3Client({
   region: 'auto',
@@ -13,14 +20,35 @@ export const r2 = new S3Client({
   }
 });
 
+export async function getAllFilenames(bucketName: string): Promise<string[]> {
+  const filenames: string[] = [];
+  let ContinuationToken: string | undefined = undefined;
 
+  try {
+    do {
+      const response = await r2.send(
+        new ListObjectsV2Command({
+          Bucket: bucketName,
+          ContinuationToken
+        })
+      );
+
+      const keys = response.Contents?.map(obj => obj.Key).filter(Boolean) as string[];
+      filenames.push(...keys);
+      ContinuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (ContinuationToken);
+  } catch (err) {
+    console.error('Failed to list objects in R2:', err);
+    throw err;
+  }
+
+  return filenames;
+}
 
 export async function uploadToR2(buffer: Buffer, key: string, contentType = 'image/png') {
-  const bucket = 'use-their-id'; // match what you created with wrangler
-
   await r2.send(
     new PutObjectCommand({
-      Bucket: bucket,
+      Bucket: newBucket,
       Key: key,
       Body: buffer,
       ContentType: contentType,
@@ -32,12 +60,10 @@ export async function uploadToR2(buffer: Buffer, key: string, contentType = 'ima
 }
 
 export async function checkR2ObjectExists(key: string): Promise<boolean> {
-  const bucket = 'use-their-id';
-
   try {
     await r2.send(
       new HeadObjectCommand({
-        Bucket: bucket,
+        Bucket: newBucket,
         Key: key,
       })
     );
@@ -45,6 +71,34 @@ export async function checkR2ObjectExists(key: string): Promise<boolean> {
   } catch (err: any) {
     if (err.name === 'NotFound') return false;
     console.error('R2 check failed:', err);
+    throw err;
+  }
+}
+
+export async function getFromR2(key: string): Promise<Buffer | null> {
+  try {
+    const result = await r2.send(
+      new GetObjectCommand({
+        Bucket: newBucket,
+        Key: key,
+      })
+    );
+
+    if (!result.Body || !(result.Body instanceof Readable)) {
+      throw new Error('Unexpected response: Body is not a stream');
+    }
+
+    const chunks: Buffer[] = [];
+    for await (const chunk of result.Body as Readable) {
+      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    }
+
+    return Buffer.concat(chunks);
+  } catch (err: any) {
+    if (err.name === 'NoSuchKey' || err.name === 'NotFound') {
+      return null;
+    }
+    console.error('R2 get failed:', err);
     throw err;
   }
 }
