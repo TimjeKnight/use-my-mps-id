@@ -3,6 +3,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.850.0",
     "@msgpack/msgpack": "^3.1.2",
+    "@upstash/redis": "^1.35.3",
     "axios": "^1.11.0",
     "csv-parser": "^3.2.0",
     "csv-stringify": "^6.6.0",
@@ -26,9 +27,8 @@
   "scripts": {
     "build:server": "tsc -p server/tsconfig.json",
     "build:client": "cd client && npm run build",
-    "copy:csv": "cpx \"server/postcode_constituency_files/*.msgpack\" \"dist/postcode_constituency_files/\"",
     "copy:client": "rm -rf dist/client && cp -r client/dist dist/client",
-    "full-build": "npm run build:server && npm run build:client && npm run copy:client && npm run copy:csv",
+    "full-build": "npm run build:server && npm run build:client && npm run copy:client",
     "dev": "nodemon"
   }
 }

@@ -5,10 +5,10 @@ import { generateMockDriversLicense } from '../services/ai.js';
 
 const router = express.Router();
 
+// strictly speaking, is doing more than just a postcode lookup
 router.get('/:postcode', async (req, res) => {
   try {
 
-    //await buildPostcodeDictionaryFromFiles();
     let postcode = formatPostcode(req.params.postcode);
     if(!postcode){
       res.status(404).send('Not a valid postcode');

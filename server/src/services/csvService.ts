@@ -1,90 +1,98 @@
+// services/csvService.ts
 import fs from 'fs';
 import path from 'path';
 import csvParser from 'csv-parser';
-import { encode, decode } from '@msgpack/msgpack';
 import { fileURLToPath } from 'url';
+import { Redis } from '@upstash/redis';
+import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const postcodeMap = new Map<string, string>();
-let isLoaded = false;
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 const RAW_CSV_FILES = [
-  path.join(__dirname, '../postcode_constituency_files/pcd_pcon_uk_lu_may_24-1.csv'),
-  path.join(__dirname, '../postcode_constituency_files/pcd_pcon_uk_lu_may_24-2.csv')
+  path.join(__dirname, '../../server/postcode_constituency_files/pcd_pcon_uk_lu_may_24-1.csv'),
+  path.join(__dirname, '../../server/postcode_constituency_files/pcd_pcon_uk_lu_may_24-2.csv'),
 ];
-
-const DICTIONARY_FILE = path.join(__dirname, '../postcode_constituency_files/postcodeDictionary.msgpack');
 
 export interface Constituency {
   pcd: string;
   pconnm: string;
 }
 
+const keyFor = (pc: string) => `pc:${pc}`;
+
 /**
- * STEP 1:
- * Build a compact binary postcode dictionary using MessagePack.
+ * Build: write each postcode as its own key using a pipeline.
+ * builds redis. only usable on local machine
  */
 export async function buildPostcodeDictionaryFromFiles(): Promise<void> {
-  const map = new Map<string, string>();
+  console.log('🔄 Building postcode keys in Redis from source files...');
 
-  const loadFile = (filePath: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(csvParser())
-        .on('data', (row: Constituency) => {
-          const key = row.pcd?.replace(/\s/g, '').trim().toUpperCase();
-          if (key && row.pconnm) {
-            map.set(key, row.pconnm.replace(/^"|"$/g, ''));
+  const BATCH_SIZE = 5000;
+
+  const buildFromCsv = (filePath: string): Promise<number> =>
+    new Promise((resolve, reject) => {
+      let total = 0;
+      let pending = 0;
+      let pipe = redis.pipeline();
+
+      const flush = async () => {
+        if (pending === 0) return;
+        await pipe.exec();
+        total += pending;
+        pending = 0;
+        pipe = redis.pipeline();
+      };
+
+      const stream = fs.createReadStream(filePath).pipe(csvParser());
+
+      stream.on('data', async (row: Constituency) => {
+        const cleaned = row.pcd?.replace(/\s/g, '').trim().toUpperCase();
+        if (cleaned && row.pconnm) {
+          const constituency = row.pconnm.replace(/^"|"$/g, '');
+          pipe.set(keyFor(cleaned), constituency);
+          pending++;
+
+          if (pending >= BATCH_SIZE) {
+            stream.pause();
+            console.log("total "+total)
+            try {
+              await flush();
+            } catch (e) {
+              stream.destroy(e as Error);
+              return;
+            }
+            stream.resume();
           }
-        })
-        .on('end', resolve)
-        .on('error', reject);
+        }
+      });
+
+      stream.on('end', async () => {
+        try {
+          await flush();
+          resolve(total);
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      stream.on('error', reject);
     });
-  };
 
-  console.log('🔄 Building postcode dictionary from source files...');
-  await Promise.all(RAW_CSV_FILES.map(loadFile));
-
-  const obj = Object.fromEntries(map.entries());
-  const buf = encode(obj);
-  fs.writeFileSync(DICTIONARY_FILE, buf);
-
-  console.log(`✅ postcodeDictionary.msgpack written with ${map.size} entries.`);
+  const counts = await Promise.all(RAW_CSV_FILES.map(buildFromCsv));
+  console.log(`✅ Loaded ${counts.reduce((a, b) => a + b, 0)} keys into Redis.`);
 }
 
 /**
- * STEP 2:
- * Load the postcode dictionary from MessagePack binary file into memory.
- */
-export async function loadPostcodes(): Promise<void> {
-  if (isLoaded) return;
-
-  console.log('📥 Loading postcodeDictionary.msgpack...');
-
-  try {
-    const buf = fs.readFileSync(DICTIONARY_FILE);
-    const dictionary = decode(buf) as Record<string, string>;
-
-    for (const [pcd, pconnm] of Object.entries(dictionary)) {
-      postcodeMap.set(pcd, pconnm);
-    }
-
-    console.log(`✅ Loaded ${postcodeMap.size} postcodes into memory.`);
-    isLoaded = true;
-  } catch (err) {
-    console.error('❌ Failed to load postcode dictionary:', err);
-    throw err;
-  }
-}
-
-/**
- * Postcode lookup function.
+ * Lookup: single GET against that postcode key.
  */
 export async function findConstituencyNameByPostcode(postcode: string): Promise<string> {
-  await loadPostcodes();
-
   const cleaned = postcode.replace(/\s/g, '').trim().toUpperCase();
-  return postcodeMap.get(cleaned) ?? '';
+  const value = await redis.get<string>(keyFor(cleaned));
+  return value ?? '';
 }
